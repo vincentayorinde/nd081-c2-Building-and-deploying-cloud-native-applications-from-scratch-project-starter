@@ -2,12 +2,24 @@
   "scriptFile": "__init__.py",
   "bindings": [
     {
-      "type": "eventGridTrigger",
-      "name": "event",
+      "type": "httpTrigger",
+      "authLevel": "admin",
       "direction": "in",
-	  "eventHubName": "testhub", 
-	  "connection": "Endpoint=sb://udacityneighborly.servicebus.windows.net/;SharedAccessKeyName=allpolicy;SharedAccessKey=LOxUOkN13xN038T1VoSsmaTt4s7vq/+VCzduS5/nH9A=;EntityPath=testhub"
+      "connection": "Endpoint=sb://vinaynamespace1.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SisR9y/2FPjiP8lfTlIhReceGPf770mQ0YXf8OKvaFY=",
+      "name": "req",
+      "methods": ["get", "post"]
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "$return"
+    },
+    {
+      "type": "sendGrid",
+      "name": "sendGridMessage",
+      "direction": "out",
+      "SendGridAPI": "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",
+      "from": "vincent@vincenttechblog.com"
     }
   ]
 }
-

@@ -1,25 +1,20 @@
-import json
 import logging
+import json
 import azure.functions as func
 
+def main(req: func.HttpRequest, sendGridMessage: func.Out[str]) -> func.HttpResponse:
 
-def main(event: func.EventGridEvent):
+    value = "Sending message from my Azure Functions HTTP Trigger - Vinay :)"
 
-	logging.info('Function triggered to process a message: ', event.get_body())
-    logging.info('  EnqueuedTimeUtc =', event.enqueued_time)
-    logging.info('  SequenceNumber =', event.sequence_number)
-    logging.info('  Offset =', event.offset)
+    message = {
+        "personalizations": [ {
+          "to": [{
+            "email": "vincentayorinde@yahoo.com"
+            }]}],
+        "subject": "[AZURE FUNCTIONS SENDGRID] email",
+        "content": [{
+            "type": "text/plain",
+            "value": value }]}
 
-    result = json.dumps({
-        'id': event.id,
-        'data': event.get_json(),
-        'topic': event.topic,
-        'subject': event.subject,
-        'event_type': event.event_type,
-    })
-
-
-    logging.info('Python EventGrid trigger processed an event: %s', result)
-
-
-
+    sendGridMessage.set(json.dumps(message))
+    return func.HttpResponse("Message successfully sent.")

@@ -1,0 +1,196 @@
+data:
+  AzureWebJobsStorage: ''
+  FUNCTIONS_WORKER_RUNTIME: cHl0aG9u
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vinayneighbourlycluster
+---
+data:
+  host.master: WmpINWNUYUoyNVJ3TGc0b1YwYXNtTjZaMnlWbHB4OWFmOGhBUnB2cHZMSTVBVkN4U1VzZjdnPT0=
+  host.function.default: MWxreUY3RVdpNUNBYTV1RTZRRzdIOWN4U3pGM0ZINTl6cm5zOFlqNDZyZlpVZU9yazAyQW5nPT0=
+  host.systemKey.default: VEVmbGNFZUg5eU50Y040dDdyQnBPTDZNNmtlN3lJSzFRdVJpVFBSUjEvQmdnRTQyZDVDSmlnPT0=
+  functions.createadvertisement.default: VVY2MDQvam8yNHhLVFZJRlluQWxSMWtNMHZEak9YVngybFQ2MWp6S3VxVlJjaXlQeWxXOGhRPT0=
+  functions.deleteadvertisement.default: L1B0VjJzc1pUOTlBYVB1cVY1UktrS2luN0FPNEdFQVlydDJpZWYwNjlhd0tLa09EZVZUTzNBPT0=
+  functions.getadvertisement.default: SlJ6R3l3UG9VeHlhY2FhQ3UyeEhlMTVaOHVXenFGT1pDek0yVDROa2xKL0xqUnI0TGQ2NWR3PT0=
+  functions.getadvertisements.default: OTY3QWMzMlFJa0ZYaXZ4L2w3ZmphMnBKeXJib3lkbWQvOWFkMVJ2QVlIOGJBaXJieFAzMkdBPT0=
+  functions.getpost.default: ejBhSlI3dmRFdkZSSWlhbnpVZG1WdVlhNTFybDZ5a0phL3FxU0dCTnBBYnZoWk4ySTl0MG53PT0=
+  functions.getposts.default: ak1ld2hvczQwcEtMcjZlMWxEajVVYVl3aVN2M2RZWmkySzVCYTNMb09jMnc4V0pGVk5Xc0Z3PT0=
+  functions.updateadvertisement.default: UWo2aEVMZG44ckt2ZWFXT2hBWHB0MlJmeTlYOWZSR0dJR1dTUVhzcVh3VkU0Tm1xcElUVDhnPT0=
+apiVersion: v1
+kind: Secret
+metadata:
+  name: func-keys-kube-secret-vinayneighbourlycluster
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vinayneighbourlycluster-function-keys-identity-svc-act
+---
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - secrets
+  - configMaps
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: functions-keys-manager-role
+---
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: functions-keys-manager-role
+subjects:
+- kind: ServiceAccount
+  name: vinayneighbourlycluster-function-keys-identity-svc-act
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: vinayneighbourlycluster-function-keys-identity-svc-act-functions-keys-manager-rolebinding
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vinayneighbourlycluster-http
+spec:
+  selector:
+    app: vinayneighbourlycluster-http
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vinayneighbourlycluster-http
+  labels:
+    app: vinayneighbourlycluster-http
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vinayneighbourlycluster-http
+  template:
+    metadata:
+      labels:
+        app: vinayneighbourlycluster-http
+    spec:
+      containers:
+      - name: vinayneighbourlycluster-http
+        image: vinayneighbourlycontainer1.azurecr.io/vinayneighbourlyapi:v1
+        ports:
+        - containerPort: 80
+        env:
+        - name: AzureFunctionsJobHost__functions__0
+          value: createAdvertisement
+        - name: AzureFunctionsJobHost__functions__1
+          value: deleteAdvertisement
+        - name: AzureFunctionsJobHost__functions__2
+          value: getAdvertisement
+        - name: AzureFunctionsJobHost__functions__3
+          value: getAdvertisements
+        - name: AzureFunctionsJobHost__functions__4
+          value: getPost
+        - name: AzureFunctionsJobHost__functions__5
+          value: getPosts
+        - name: AzureFunctionsJobHost__functions__6
+          value: updateAdvertisement
+        - name: AzureWebJobsSecretStorageType
+          value: kubernetes
+        - name: AzureWebJobsKubernetesSecretName
+          value: secrets/func-keys-kube-secret-vinayneighbourlycluster
+        envFrom:
+        - secretRef:
+            name: vinayneighbourlycluster
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 240
+          httpGet:
+            path: /
+            port: 80
+            scheme: HTTP
+        startupProbe:
+          failureThreshold: 3
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 240
+          httpGet:
+            path: /
+            port: 80
+            scheme: HTTP
+      serviceAccountName: vinayneighbourlycluster-function-keys-identity-svc-act
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vinayneighbourlycluster
+  labels:
+    app: vinayneighbourlycluster
+spec:
+  selector:
+    matchLabels:
+      app: vinayneighbourlycluster
+  template:
+    metadata:
+      labels:
+        app: vinayneighbourlycluster
+    spec:
+      containers:
+      - name: vinayneighbourlycluster
+        image: vinayneighbourlycontainer1.azurecr.io/vinayneighbourlyapi:v1
+        env:
+        - name: AzureFunctionsJobHost__functions__0
+          value: eventHubTrigger
+        envFrom:
+        - secretRef:
+            name: vinayneighbourlycluster
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 240
+          httpGet:
+            path: /
+            port: 80
+            scheme: HTTP
+        startupProbe:
+          failureThreshold: 3
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 240
+          httpGet:
+            path: /
+            port: 80
+            scheme: HTTP
+      serviceAccountName: vinayneighbourlycluster-function-keys-identity-svc-act
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: vinayneighbourlycluster
+  labels: {}
+spec:
+  scaleTargetRef:
+    name: vinayneighbourlycluster
+  triggers:
+  - type: eventgridtrigger
+    metadata:
+      direction: in
+      eventHubName: testhub
+      connection: Endpoint=sb://udacityneighborly.servicebus.windows.net/;SharedAccessKeyName=allpolicy;SharedAccessKey=LOxUOkN13xN038T1VoSsmaTt4s7vq/+VCzduS5/nH9A=;EntityPath=testhub
+---
+
